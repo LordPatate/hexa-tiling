@@ -40,24 +40,10 @@ def get_radius(number: int) -> int:
     """
     if number == 0:
         return 0
-    return _get_msb_rank((number + 5) // 6) + 1
-
-
-def _get_msb_rank(x: int) -> int:
-    """Return the rank of the most significant bit in x.
-
-    msb(1) = 0
-    msb(8) = 3  # 8 = b1000
-    msb(128) = 7  # 128 = b10000000
-    The rank n has a weight of 2^n.
-    This can be used as efficient binary logarithm.
-    """
-    if x == 0:
-        raise ValueError("No MSB for zero")
     word_size = 64 if (sys.maxsize > 2**32) else 32
-    for rank in range(1, word_size + 1):
-        if x >> rank == 0:
-            return rank - 1
+    for rank in range(1, word_size):
+        if 1 << rank > (number + 5) / 6:
+            return rank
     raise RuntimeError("Unexpected error")
 
 
@@ -67,4 +53,6 @@ def get_angle(number: int) -> float:
     :param number: The tile's identifying number
     :return: The angle in degrees relative to "noon"
     """
-    return 360 * ((number + 5) / (((number + 5) // 6) * 6))
+    numerator = number + 5
+    denominator = 6 * (1 << (get_radius(number) - 1))
+    return 360 * (numerator/denominator - 1)
